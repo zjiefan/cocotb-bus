@@ -29,7 +29,7 @@ class Bus:
         Support for ``struct``/``record`` ports where signals are member names.
     """
 
-    def __init__(self, entity, name, signals, optional_signals=[], bus_separator="_", case_insensitive=True, array_idx=None):
+    def __init__(self, entity, name, signals, optional_signals=[], bus_separator="_", case_insensitive=True, array_idx=None, **kwargs):
         """
         Args:
             entity (SimHandle): :any:`SimHandle` instance to the entity containing the bus.
@@ -53,13 +53,14 @@ class Bus:
         self._entity = entity
         self._name = name
         self._signals = {}
+        handle_dict = kwargs.get('handle_dict', None)
         for attr_name, sig_name in _build_sig_attr_dict(signals).items():
             if name:
                 signame = name + bus_separator + sig_name
             else:
                 signame = sig_name
 
-            self._add_signal(attr_name, signame, array_idx, case_insensitive)
+            self._add_signal(attr_name, signame, array_idx, case_insensitive, handle_dict)
 
         # Also support a set of optional signals that don't have to be present
         for attr_name, sig_name in _build_sig_attr_dict(optional_signals).items():
@@ -69,7 +70,9 @@ class Bus:
                 signame = sig_name
             # Signal matching on optional attributes needs to be also case insensitive
             self._entity._log.debug("Signal name {}".format(signame))
-            if self._caseInsensGetattr(entity, signame) is not None:
+            if handle_dict and (attr_name in handle_dict):
+                self._add_signal(attr_name, signame, array_idx, case_insensitive, handle_dict)
+            elif self._caseInsensGetattr(entity, signame) is not None:
                 self._add_signal(attr_name, signame, array_idx, case_insensitive)
             else:
                 self._entity._log.debug("Ignoring optional missing signal "
@@ -81,9 +84,11 @@ class Bus:
                 return getattr(obj, a)
         return None
 
-    def _add_signal(self, attr_name, signame, array_idx=None, case_insensitive=True):
+    def _add_signal(self, attr_name, signame, array_idx=None, case_insensitive=True, handle_dict=None):
         self._entity._log.debug("Signal name {}, idx {}".format(signame, array_idx))
-        if case_insensitive:
+        if handle_dict:
+            handle = handle_dict[attr_name]
+        elif case_insensitive:
             handle = self._caseInsensGetattr(self._entity, signame)
         else:
             handle = getattr(self._entity, signame)
