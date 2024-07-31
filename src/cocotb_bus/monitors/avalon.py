@@ -13,11 +13,11 @@ NB Currently we only support a very small subset of functionality.
 
 import warnings
 
-from cocotb.utils import hexdump
 from cocotb.triggers import RisingEdge
 from cocotb.binary import BinaryValue
 
 from cocotb_bus.monitors import BusMonitor
+from dpkt import hexdump
 
 
 class AvalonProtocolError(Exception):
