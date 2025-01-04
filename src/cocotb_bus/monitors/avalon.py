@@ -189,7 +189,7 @@ class AvalonSTPkts(BusMonitor):
                         raise AvalonProtocolError("Channel value changed during packet")
 
                 if self.bus.endofpacket.value:
-                    self.log.info("Received a packet of %d bytes", len(pkt))
+                    self.log.debug("Received a packet of %d bytes", len(pkt))
                     self.log.debug(hexdump(pkt))
                     self.channel = channel
                     if self.report_channel:
